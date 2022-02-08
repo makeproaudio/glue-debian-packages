@@ -20,7 +20,8 @@ jobs:
       run: |
         git clone "https://${{secrets.GH_ACCESS_TOKEN}}@github.com/makeproaudio/glue.git" && cd glue && git checkout debian-packages
         yarn
-        cd packages/Glue && node build-debian-package.js x64
+        cd packages/glue-ui && npm run build
+        cd ../packages/Glue && npm run build && node build-debian-package.js x64
     # - name: Upload .deb
     #   run: ./mc cp packages/Glue/${{steps.bundle.outputs.filename}} cdn/glue-deb-packages/${{steps.bundle.outputs.filename}}
   build_arm64_and_armv7:
@@ -40,13 +41,13 @@ jobs:
         distro: ubuntu18.04
         install: |
           apt-get update && apt-get install -y wget
-          wget -O /home/runner/mc https://dl.min.io/client/mc/release/linux-amd64/mc && chmod +x /home/runner/mc && pwd && ls
         githubToken: ${{ github.token }}
         run: |
-          pwd && ls
-          /home/runner/mc alias set cdn https://cdn.makepro-x.com ${{ secrets.AWS_ACCESS_KEY_ID }} ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          wget https://dl.min.io/client/mc/release/linux-${{matrix.arch == 'armv7' ? 'arm' : 'arm64'}}/mc && chmod +x ./mc
+          ./mc alias set cdn https://cdn.makepro-x.com ${{ secrets.AWS_ACCESS_KEY_ID }} ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           git clone "https://${{secrets.GH_ACCESS_TOKEN}}@github.com/makeproaudio/glue.git" && cd glue && git checkout debian-packages
           yarn
-          cd packages/Glue && node build-debian-package.js ${{ matrix.arch }}
+          cd packages/glue-ui && npm run build
+          cd ../packages/Glue && npm run build && node build-debian-package.js ${{ matrix.arch }}
     # - name: Upload .deb
-    #   run: /home/runner/mc cp packages/Glue/${{steps.bundle.outputs.filename}} cdn/glue-deb-packages/${{steps.bundle.outputs.filename}}
+    #   run: ../mc cp packages/Glue/${{steps.bundle.outputs.filename}} cdn/glue-deb-packages/${{steps.bundle.outputs.filename}}
