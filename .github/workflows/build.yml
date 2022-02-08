@@ -40,7 +40,7 @@ jobs:
         arch: ${{ matrix.arch }}
         distro: ubuntu18.04
         install: |
-          apt-get update && apt-get install -y wget git libasound2-dev pkg-config libudev-dev libusb-1.0-0-dev
+          apt-get update && apt-get install -y curl wget git libasound2-dev pkg-config libudev-dev libusb-1.0-0-dev
           curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
           apt-get install -y nodejs
         # githubToken: ${{ github.token }}
