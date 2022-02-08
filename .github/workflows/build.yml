@@ -25,7 +25,6 @@ jobs:
         arch: [aarch64, armv7]
     steps:
     - uses: actions/checkout@master
-    - name: Install Minio CLI
     - name: build
       uses: uraimo/run-on-arch-action@v2
       id: emulator
