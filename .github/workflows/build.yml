@@ -1,6 +1,9 @@
 name: Build Debian Images
 on: [workflow_dispatch]
 
+env:
+  NODE_OPTIONS: "--max_old_space_size=8048"
+
 jobs:
   build_x64:
     name: Build Package for x64
