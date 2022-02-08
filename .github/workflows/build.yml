@@ -17,13 +17,14 @@ jobs:
         sudo apt-get update
         sudo apt-get install libasound2-dev pkg-config libudev-dev libusb-1.0-0-dev
     - name: Build
+      id: build
       run: |
         git clone "https://${{secrets.GH_ACCESS_TOKEN}}@github.com/makeproaudio/glue.git" && cd glue && git checkout debian-packages
         node setup.js
         cd packages/glue-ui && npm run build
         cd ../Glue && npm run build && node build-debian-package.js x64
-    # - name: Upload .deb
-    #   run: ./mc cp packages/Glue/${{steps.bundle.outputs.filename}} cdn/glue-deb-packages/${{steps.bundle.outputs.filename}}
+     - name: Upload .deb
+       run: ./mc cp ${{steps.build.outputs.filepath}} cdn/glue-deb-packages/${{steps.build.outputs.filename}}
   build_arm64_and_armv7:
     name: Build Package for ${{ matrix.arch }}
     runs-on: ubuntu-latest
@@ -33,24 +34,30 @@ jobs:
         arch: [aarch64, armv7]
     steps:
     - uses: actions/checkout@master
+    - name: Install Minio CLI
+      run: wget https://dl.min.io/client/mc/release/linux-amd64/mc && chmod +x ./mc && ./mc alias set cdn https://cdn.makepro-x.com ${{ secrets.AWS_ACCESS_KEY_ID }} ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     - name: Build
       uses: uraimo/run-on-arch-action@v2.1.1
-      id: emulator
+      id: build
       with:
         arch: ${{ matrix.arch }}
         distro: ubuntu18.04
+        env: |
+          NODE_OPTIONS: --max_old_space_size=8048
+        setup: |
+          mkdir -p "${PWD}/artifacts"
+        dockerRunArgs: |
+          --volume "${PWD}/artifacts:/artifacts"
         install: |
-          apt-get update && apt-get install -y curl wget git libasound2-dev pkg-config libudev-dev libusb-1.0-0-dev
+          apt-get update && apt-get install -y curl git libasound2-dev pkg-config libudev-dev libusb-1.0-0-dev
           curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
           apt-get install -y nodejs
           npm install --global yarn
         # githubToken: ${{ github.token }}
         run: |
-          wget https://dl.min.io/client/mc/release/linux-${{matrix.arch == 'armv7' && 'arm' || 'arm64'}}/mc && chmod +x ./mc
           git clone "https://${{secrets.GH_ACCESS_TOKEN}}@github.com/makeproaudio/glue.git" && cd glue && git checkout debian-packages
           node setup.js
           cd packages/glue-ui && npm run build
           cd ../Glue && npm run build && node build-debian-package.js ${{ matrix.arch }}
-        # ./mc alias set cdn https://cdn.makepro-x.com ${{ secrets.AWS_ACCESS_KEY_ID }} ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    # - name: Upload .deb
-    #   run: ../mc cp packages/Glue/${{steps.bundle.outputs.filename}} cdn/glue-deb-packages/${{steps.bundle.outputs.filename}}
+    - name: Upload .deb
+      run: ../mc cp artifacts/${{steps.build.outputs.filename}} cdn/glue-deb-packages/${{steps.build.outputs.filename}}
