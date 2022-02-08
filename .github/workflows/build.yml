@@ -40,8 +40,10 @@ jobs:
         arch: ${{ matrix.arch }}
         distro: ubuntu18.04
         install: |
-          apt-get update && apt-get install -y wget
-        githubToken: ${{ github.token }}
+          apt-get update && apt-get install -y wget git libasound2-dev pkg-config libudev-dev libusb-1.0-0-dev
+          curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+          apt-get install -y nodejs
+        # githubToken: ${{ github.token }}
         run: |
           wget https://dl.min.io/client/mc/release/linux-${{matrix.arch == 'armv7' && 'arm' || 'arm64'}}/mc && chmod +x ./mc
           git clone "https://${{secrets.GH_ACCESS_TOKEN}}@github.com/makeproaudio/glue.git" && cd glue && git checkout debian-packages
