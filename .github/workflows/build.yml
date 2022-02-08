@@ -37,13 +37,13 @@ jobs:
         distro: ubuntu18.04
         install: |
           apt-get update && apt-get install -y wget
-          wget https://dl.min.io/client/mc/release/linux-amd64/mc && chmod +x ./mc && pwd && ls
+          wget -O /home/runner/mc https://dl.min.io/client/mc/release/linux-amd64/mc && chmod +x /home/runner/mc && pwd && ls
         githubToken: ${{ github.token }}
         run: |
           pwd && ls
-          ./mc alias set cdn https://cdn.makepro-x.com ${{ secrets.AWS_ACCESS_KEY_ID }} ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          /home/runner/mc alias set cdn https://cdn.makepro-x.com ${{ secrets.AWS_ACCESS_KEY_ID }} ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           git clone "https://${{secrets.GH_ACCESS_TOKEN}}@github.com/makeproaudio/glue.git" && cd glue && git checkout debian-packages
           yarn
           cd packages/Glue && node build-debian-package.js ${{ matrix.arch }}
     # - name: Upload .deb
-    #   run: ./mc cp packages/Glue/${{steps.bundle.outputs.filename}} cdn/glue-deb-packages/${{steps.bundle.outputs.filename}}
+    #   run: /home/runner/mc cp packages/Glue/${{steps.bundle.outputs.filename}} cdn/glue-deb-packages/${{steps.bundle.outputs.filename}}
