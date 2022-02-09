@@ -24,7 +24,7 @@ jobs:
         cd packages/glue-ui && npm run build
         cd ../Glue && npm run build && node build-debian-package.js x64
     - name: Upload .deb
-      run: cd./mc cp debian-packages/${{steps.build.outputs.filename}} cdn/glue-deb-packages/${{steps.build.outputs.filename}}
+      run: ./mc cp debian-packages/${{steps.build.outputs.filename}} cdn/glue-deb-packages/${{steps.build.outputs.filename}}
   build_arm64_and_armv7:
     name: Build Package for ${{ matrix.arch }}
     runs-on: ubuntu-latest
