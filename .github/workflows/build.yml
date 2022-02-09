@@ -58,6 +58,6 @@ jobs:
           git clone "https://${{secrets.GH_ACCESS_TOKEN}}@github.com/makeproaudio/glue.git" && cd glue && git checkout debian-packages
           node setup.js
           cd packages/glue-ui && npm run build
-          cd ../Glue && npm run build && node build-debian-package.js ${{ matrix.arch }}
+          cd ../Glue && npm run build && node build-debian-package.js ${{ fromJSON('{"aarch64": "arm64", "armv7": "armv7"}')[matrix.arch] }}
     - name: Upload .deb
       run: ../mc cp artifacts/${{steps.build.outputs.filename}} cdn/glue-deb-packages/${{steps.build.outputs.filename}}
