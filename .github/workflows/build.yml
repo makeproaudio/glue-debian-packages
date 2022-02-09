@@ -5,8 +5,8 @@ env:
   NODE_OPTIONS: "--max_old_space_size=8048"
 
 jobs:
-  build_x64:
-    name: Build Package for x64
+  build_amd64:
+    name: Build Package for amd64
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
@@ -22,7 +22,7 @@ jobs:
         git clone "https://${{secrets.GH_ACCESS_TOKEN}}@github.com/makeproaudio/glue.git" && cd glue && git checkout debian-packages
         node setup.js
         cd packages/glue-ui && npm run build
-        cd ../Glue && npm run build && node build-debian-package.js x64
+        cd ../Glue && npm run build && node build-debian-package.js amd64
     - name: Upload .deb
       run: ./mc cp glue/debian-packages/${{steps.build.outputs.filename}} cdn/glue-deb-packages/${{steps.build.outputs.filename}}
   build_arm64_and_armv7:
