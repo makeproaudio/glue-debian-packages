@@ -19,7 +19,7 @@ jobs:
     - name: Build
       id: build
       run: |
-        git clone "https://${{secrets.GH_ACCESS_TOKEN}}@github.com/makeproaudio/glue.git" && cd glue && git checkout debian-packages
+        git clone "https://${{secrets.GH_ACCESS_TOKEN}}@github.com/makeproaudio/glue.git" && cd glue
         node setup.js
         cd packages/glue-ui && npm run build
         cd ../Glue && npm run build && node build-debian-package.js amd64
@@ -55,7 +55,7 @@ jobs:
           npm install --global yarn
         githubToken: ${{ github.token }}
         run: |
-          git clone "https://${{secrets.GH_ACCESS_TOKEN}}@github.com/makeproaudio/glue.git" && cd glue && git checkout debian-packages
+          git clone "https://${{secrets.GH_ACCESS_TOKEN}}@github.com/makeproaudio/glue.git" && cd glue
           node setup.js
           cd packages/glue-ui && npm run build
           cd ../Glue && npm run build && node build-debian-package.js ${{ fromJSON('{"aarch64": "arm64", "armv7": "armv7"}')[matrix.arch] }}
