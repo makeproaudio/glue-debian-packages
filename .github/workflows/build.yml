@@ -70,7 +70,7 @@ jobs:
     needs: [build_arm64_and_armv7, build_amd64]
     steps:
     - name: Trigger Build
-      uses: hrueger/dispatch-action@pr-1
+      uses: hrueger/dispatch-action@main
       with:
         token: ${{ secrets.GH_ACCESS_TOKEN }}
         owner: makeproaudio
