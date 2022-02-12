@@ -1,5 +1,8 @@
 name: Build Debian Images
-on: [workflow_dispatch]
+on:
+  repository_dispatch:
+    types: [build]
+  workflow_dispatch:
 
 env:
   NODE_OPTIONS: "--max_old_space_size=8048"
@@ -61,3 +64,16 @@ jobs:
           cd ../Glue && npm run build && node build-debian-package.js ${{ fromJSON('{"aarch64": "arm64", "armv7": "armv7"}')[matrix.arch] }}
     - name: Upload .deb
       run: ./mc cp artifacts/${{steps.build.outputs.filename}} cdn/glue-deb-packages/${{steps.build.outputs.filename}}
+  trigger_pi_image_build:
+    name: Trigger Pi Image Build
+    runs-on: ubuntu-latest
+    needs: [build_arm64_and_armv7, build_amd64]
+    steps:
+    - name: Trigger Build
+      uses: hrueger/dispatch-action@pr-1
+      with:
+        token: ${{ secrets.GH_ACCESS_TOKEN }}
+        owner: makeproaudio
+        repo: glue-pi-os
+        event_type: build
+        forwardEventPayload: "false"
