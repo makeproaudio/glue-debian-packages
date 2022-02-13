@@ -43,7 +43,7 @@ jobs:
       uses: uraimo/run-on-arch-action@v2.1.1
       id: build
       with:
-        arch: ${{ fromJSON('{"armhf": "armv7"}')[matrix.arch] }}
+        arch: "${{ fromJSON('{\"armhf\": \"armv7\"}')[matrix.arch] }}"
         distro: ubuntu18.04
         env: |
           NODE_OPTIONS: --max_old_space_size=8048
