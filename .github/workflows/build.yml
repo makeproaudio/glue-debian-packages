@@ -11,10 +11,11 @@ jobs:
   build_native:
     name: Build Package for amd64
     runs-on: ubuntu-latest
+    outputs:
+      filename: ${{steps.build.outputs.filename}}
+      version: ${{steps.version.outputs.group1}}
     steps:
     - uses: actions/checkout@master
-    - name: Install Minio CLI
-      run: wget https://dl.min.io/client/mc/release/linux-amd64/mc && chmod +x ./mc && ./mc alias set cdn https://cdn.makepro-x.com ${{ secrets.AWS_ACCESS_KEY_ID }} ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     - name: Install required dependencies
       run: |
         sudo apt-get update
@@ -26,19 +27,28 @@ jobs:
         node setup.js
         cd packages/glue-ui && npm run build
         cd ../Glue && npm run build && node build-debian-package.js amd64
-    - name: Upload .deb
-      run: ./mc cp glue/debian-packages/${{steps.build.outputs.filename}} cdn/glue-deb-packages/${{steps.build.outputs.filename}}
-  build_quemu:
+    - name: Determine version
+      uses: actions-ecosystem/action-regex-match@v2
+      id: version
+      with:
+        text: ${{steps.build.outputs.filename}}
+        regex: '^glue_(.*)_.*\.deb$'
+    - name: Store package as Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        path: glue/debian-packages/${{steps.build.outputs.filename}}
+        name: glue-amd64
+  build_qemu:
     name: Build Package for ${{ matrix.arch }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         arch: [armhf]
+    outputs:
+      filename: ${{steps.build.outputs.filename}}
     steps:
     - uses: actions/checkout@master
-    - name: Install Minio CLI
-      run: wget https://dl.min.io/client/mc/release/linux-amd64/mc && chmod +x ./mc && ./mc alias set cdn https://cdn.makepro-x.com ${{ secrets.AWS_ACCESS_KEY_ID }} ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     - name: Build
       uses: uraimo/run-on-arch-action@v2.1.1
       id: build
@@ -62,12 +72,45 @@ jobs:
           node setup.js
           cd packages/glue-ui && npm run build
           cd ../Glue && npm run build && node build-debian-package.js ${{ matrix.arch }}
-    - name: Upload .deb
-      run: ./mc cp artifacts/${{steps.build.outputs.filename}} cdn/glue-deb-packages/${{steps.build.outputs.filename}}
+    - name: Store package as Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        path: glue/debian-packages/${{steps.build.outputs.filename}}
+        name: glue-${{matrix.arch}}
+  publish_package:
+    runs-on: ubuntu-latest
+    needs: [build_qemu, build_native]
+    steps:
+      - name: Install Aptly CLI
+        run: gem install aptly_cli
+      - name: Create Aptly CLI config file
+        run: "echo \"---\n:proto: https\n:server: aptly.internal.makepro-x.com\n:port: 443\" > /etc/aptly-cli.conf"
+      - name: Download Artifact (amd64)
+        uses: actions/download-artifact@v2
+        with:
+          name: glue-amd64
+      - name: Download Artifact (armhf)
+        uses: actions/download-artifact@v2
+        with:
+          name: glue-armhf
+      - name: Debug
+        run: ls
+      - name: Upload package (amd64)
+        run: aptly-cli --username ${{ inputs.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} file_upload --upload ${{needs.build_native.outputs.filename }} --directory /uploads
+      - name: Upload package (armhf)
+        run: aptly-cli --username ${{ inputs.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} file_upload --upload ${{needs.build_qemu.outputs.filename }} --directory /uploads
+      - name: Add package to repository
+        run: aptly-cli --username ${{ inputs.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} repo_upload --name glue-release --dir /uploads/
+      - name: Create Snapshot
+        run: aptly-cli --username ${{ inputs.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} snapshot_create --name snapshot-${{needs.build_native.outputs.version}} --repo glue-release
+      - name: Drop old published Repository
+        run: "aptly-cli --username ${{ inputs.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} publish_drop --prefix s3:repo.makepro-x.com: --distribution bullseye"
+      - name: Publish new Snapshot
+        run: "aptly-cli --username ${{ inputs.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} publish_repo --sourcekind snapshot --name snapshot-${{needs.build_native.outputs.version}} --prefix s3:repo.makepro-x.com: --gpg_key ${{ secrets.APTLY_GPG_KEY }} --gpg_passphrase ${{ secrets.APTLY_GPG_PASSPHRASE }}  --gpg_batch"
   trigger_pi_image_build:
     name: Trigger Pi Image Build
     runs-on: ubuntu-latest
-    needs: [build_quemu, build_native]
+    needs: [publish_package]
     steps:
     - name: Trigger Build
       uses: hrueger/dispatch-action@main
