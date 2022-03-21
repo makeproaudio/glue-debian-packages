@@ -81,8 +81,12 @@ jobs:
   publish_package:
     name: Publish to Aptly Repository
     runs-on: ubuntu-latest
-    needs: [build_native] # build_qemu
+    # needs: [build_native] # build_qemu
     steps:
+      - name: Install ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.6
       - name: Install Aptly CLI
         run: gem install aptly_cli
       - name: Create Aptly CLI config file
