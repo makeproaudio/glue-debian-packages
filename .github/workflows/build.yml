@@ -95,10 +95,10 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: glue-amd64
-      - name: Download Artifact (armhf)
-        uses: actions/download-artifact@v2
-        with:
-          name: glue-armhf
+      # - name: Download Artifact (armhf)
+      #   uses: actions/download-artifact@v2
+      #   with:
+      #     name: glue-armhf
       - name: Debug
         run: ls
       - name: Upload package (amd64)
