@@ -1,5 +1,6 @@
 name: Build Debian Images
 on:
+  push:
   repository_dispatch:
     types: [build]
   workflow_dispatch:
