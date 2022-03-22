@@ -81,7 +81,7 @@ jobs:
   publish_package:
     name: Publish to Aptly Repository
     runs-on: ubuntu-latest
-    needs: [build_native] # build_qemu
+    needs: [build_native, build_qemu]
     steps:
       - name: Install ruby
         uses: ruby/setup-ruby@v1
@@ -95,16 +95,16 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: glue-amd64
-      # - name: Download Artifact (armhf)
-      #   uses: actions/download-artifact@v2
-      #   with:
-      #     name: glue-armhf
+      - name: Download Artifact (armhf)
+         uses: actions/download-artifact@v2
+         with:
+           name: glue-armhf
       - name: Debug (List repositories)
         run: aptly-cli -c ./aptly-cli.conf --username ${{ secrets.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} --debug repo_list
       - name: Upload package (amd64)
         run: aptly-cli -c ./aptly-cli.conf --username ${{ secrets.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} file_upload --upload ${{needs.build_native.outputs.filename }} --directory /uploads
-      # - name: Upload package (armhf)
-      #   run: aptly-cli -c ./aptly-cli.conf --username ${{ secrets.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} file_upload --upload ${{needs.build_qemu.outputs.filename }} --directory /uploads
+      - name: Upload package (armhf)
+         run: aptly-cli -c ./aptly-cli.conf --username ${{ secrets.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} file_upload --upload ${{needs.build_qemu.outputs.filename }} --directory /uploads
       - name: Add packages to repository
         run: aptly-cli -c ./aptly-cli.conf --username ${{ secrets.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} repo_upload --name makepro-x --dir /uploads/
       - name: Create Snapshot
