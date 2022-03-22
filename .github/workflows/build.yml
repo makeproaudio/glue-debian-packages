@@ -100,19 +100,19 @@ jobs:
       #   with:
       #     name: glue-armhf
       - name: Debug (List repositories)
-        run: aptly-cli -c ./aptly-cli.conf --username ${{ inputs.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} --debug repo_list
+        run: aptly-cli -c ./aptly-cli.conf --username ${{ secrets.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} --debug repo_list
       - name: Upload package (amd64)
-        run: aptly-cli -c ./aptly-cli.conf --username ${{ inputs.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} file_upload --upload ${{needs.build_native.outputs.filename }} --directory /uploads
+        run: aptly-cli -c ./aptly-cli.conf --username ${{ secrets.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} file_upload --upload ${{needs.build_native.outputs.filename }} --directory /uploads
       # - name: Upload package (armhf)
-      #   run: aptly-cli -c ./aptly-cli.conf --username ${{ inputs.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} file_upload --upload ${{needs.build_qemu.outputs.filename }} --directory /uploads
+      #   run: aptly-cli -c ./aptly-cli.conf --username ${{ secrets.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} file_upload --upload ${{needs.build_qemu.outputs.filename }} --directory /uploads
       - name: Add packages to repository
-        run: aptly-cli -c ./aptly-cli.conf --username ${{ inputs.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} repo_upload --name makepro-x --dir /uploads/
+        run: aptly-cli -c ./aptly-cli.conf --username ${{ secrets.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} repo_upload --name makepro-x --dir /uploads/
       - name: Create Snapshot
-        run: aptly-cli -c ./aptly-cli.conf --username ${{ inputs.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} snapshot_create --name snapshot-${{needs.build_native.outputs.version}} --repo makepro-x
+        run: aptly-cli -c ./aptly-cli.conf --username ${{ secrets.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} snapshot_create --name snapshot-${{needs.build_native.outputs.version}} --repo makepro-x
       - name: Drop old published Repository
-        run: "aptly-cli -c ./aptly-cli.conf --username ${{ inputs.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} publish_drop --prefix s3:repo.makepro-x.com: --distribution debian"
+        run: "aptly-cli -c ./aptly-cli.conf --username ${{ secrets.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} publish_drop --prefix s3:repo.makepro-x.com: --distribution debian"
       - name: Publish new Snapshot
-        run: "aptly-cli -c ./aptly-cli.conf --username ${{ inputs.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} publish_repo --sourcekind snapshot --name snapshot-${{needs.build_native.outputs.version}} --prefix s3:repo.makepro-x.com: --gpg_key ${{ secrets.APTLY_GPG_KEY }} --gpg_passphrase ${{ secrets.APTLY_GPG_PASSPHRASE }}  --gpg_batch"
+        run: "aptly-cli -c ./aptly-cli.conf --username ${{ secrets.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} publish_repo --sourcekind snapshot --name snapshot-${{needs.build_native.outputs.version}} --prefix s3:repo.makepro-x.com: --gpg_key ${{ secrets.APTLY_GPG_KEY }} --gpg_passphrase ${{ secrets.APTLY_GPG_PASSPHRASE }}  --gpg_batch"
   trigger_pi_image_build:
     name: Trigger Pi Image Build
     runs-on: ubuntu-latest
