@@ -104,7 +104,7 @@ jobs:
       - name: Upload package (amd64)
         run: aptly-cli -c ./aptly-cli.conf --username ${{ secrets.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} file_upload --upload ${{needs.build_native.outputs.filename }} --directory /uploads
       - name: Upload package (armhf)
-         run: aptly-cli -c ./aptly-cli.conf --username ${{ secrets.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} file_upload --upload ${{needs.build_qemu.outputs.filename }} --directory /uploads
+        run: aptly-cli -c ./aptly-cli.conf --username ${{ secrets.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} file_upload --upload ${{needs.build_qemu.outputs.filename }} --directory /uploads
       - name: Add packages to repository
         run: aptly-cli -c ./aptly-cli.conf --username ${{ secrets.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} repo_upload --name makepro-x --dir /uploads/
       - name: Create Snapshot
