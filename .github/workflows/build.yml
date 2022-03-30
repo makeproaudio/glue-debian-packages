@@ -113,7 +113,7 @@ jobs:
         continue-on-error: 'true'
         run: "aptly-cli -c ./aptly-cli.conf --username ${{ secrets.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} publish_drop --prefix s3:repo.makepro-x.com: --distribution debian"
       - name: Publish new Snapshot
-        run: "aptly-cli -c ./aptly-cli.conf --username ${{ secrets.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} publish_repo --sourcekind snapshot --name snapshot-${{needs.build_native.outputs.version}} --prefix s3:repo.makepro-x.com: --gpg_key ${{ secrets.APTLY_GPG_KEY }} --gpg_passphrase ${{ secrets.APTLY_GPG_PASSPHRASE }}  --gpg_batch"
+        run: "aptly-cli -c ./aptly-cli.conf --username ${{ secrets.APTLY_USERNAME }} --password ${{ secrets.APTLY_PASSWORD }} publish_repo --sourcekind snapshot --name snapshot-${{needs.build_native.outputs.version}} --prefix s3:repo.makepro-x.com: --gpg_key ${{ secrets.APTLY_GPG_KEY }} --gpg_passphrase ${{ secrets.APTLY_GPG_PASSPHRASE }} --gpg_batch --forceoverwrite"
   trigger_pi_image_build:
     name: Trigger Pi Image Build
     runs-on: ubuntu-latest
