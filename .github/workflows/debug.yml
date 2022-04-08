@@ -39,3 +39,4 @@ jobs:
         githubToken: ${{ github.token }}
         run: |
           node -e "console.log(require('v8').getHeapStatistics())"
+          node -e "console.log(process.env)"
