@@ -32,6 +32,7 @@ jobs:
         dockerRunArgs: |
           --volume "${PWD}/artifacts:/artifacts"
         install: |
+          apt-get update && apt-get install curl
           curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
           apt-get install -y nodejs
           npm install --global yarn
