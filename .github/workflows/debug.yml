@@ -1,0 +1,37 @@
+name: Debug
+on:
+  push:
+
+env:
+  NODE_OPTIONS: "--max_old_space_size=8048"
+
+jobs:
+  build_qemu:
+    name: Debug ${{ matrix.arch }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [armhf]
+    steps:
+    - uses: actions/checkout@master
+    - name: Build
+      uses: uraimo/run-on-arch-action@v2.1.1
+      id: build
+      with:
+        arch: "${{ fromJSON('{\"armhf\": \"armv7\"}')[matrix.arch] }}"
+        distro: ubuntu18.04
+        env: |
+          NODE_OPTIONS: --max_old_space_size=8048
+        setup: |
+          mkdir -p "${PWD}/artifacts"
+        dockerRunArgs: |
+          --volume "${PWD}/artifacts:/artifacts"
+        install: |
+          apt-get update && apt-get install -y curl git libasound2-dev pkg-config libudev-dev libusb-1.0-0-dev
+          curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+          apt-get install -y nodejs
+          npm install --global yarn
+        githubToken: ${{ github.token }}
+        run: |
+          node -e "console.log(require('v8').getHeapStatistics())"
