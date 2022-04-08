@@ -16,9 +16,9 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Set Swap Space
-        uses: pierotofy/set-swap-space@master
-        with:
-          swap-size-gb: 10
+      uses: pierotofy/set-swap-space@master
+      with:
+        swap-size-gb: 10
     - name: Build
       uses: uraimo/run-on-arch-action@v2.1.1
       id: build
